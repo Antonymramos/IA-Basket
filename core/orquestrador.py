@@ -10,9 +10,9 @@ from data_ingestion.live_feed_client import LiveFeedClient
 from data_ingestion.bet_scraper import BetScraper
 
 class Orquestrador:
-    def __init__(self, config):
+    def __init__(self, config, gemini_api_key):
         self.config = config
-        self.gemini = GeminiBrain(config['gemini_api_key'])
+        self.gemini = GeminiBrain(gemini_api_key)
         self.live_feed = LiveFeedClient(config['live_feed_ws_url'])
         self.bet_scraper = BetScraper(config['bet_url'])
     

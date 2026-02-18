@@ -1,4 +1,5 @@
 google-generativeai
 playwright
 websocket-client
-asyncio
+websockets
+python-dotenv
