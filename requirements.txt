@@ -3,3 +3,5 @@ playwright
 websocket-client
 websockets
 python-dotenv
+fastapi
+uvicorn

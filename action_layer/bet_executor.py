@@ -3,7 +3,7 @@
 Bet Executor - Executes bets on the betting platform
 """
 
-from playwright.async_api import async_playwright
+from playwright.sync_api import sync_playwright
 
 class BetExecutor:
     def __init__(self):
@@ -12,33 +12,33 @@ class BetExecutor:
         with open('config.json', 'r') as f:
             self.config = json.load(f)
     
-    async def execute_bet(self, time_alvo, tipo_pontuacao, valor_stake):
+    def execute_bet(self, time_alvo, tipo_pontuacao, valor_stake):
         """
         Execute a live bet
         """
-        async with async_playwright() as p:
-            browser = await p.chromium.launch()
-            page = await browser.new_page()
-            await page.goto(self.config['bet_url'])
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            page.goto(self.config['bet_url'])
             
             # Login if necessary
-            # await page.fill("#username", self.config['username'])
-            # await page.fill("#password", self.config['password'])
-            # await page.click("#login-button")
+            # page.fill("#username", self.config['username'])
+            # page.fill("#password", self.config['password'])
+            # page.click("#login-button")
             
             # Select the bet option
             # This is highly dependent on the actual site
             if time_alvo == "Team A":
-                await page.click("#bet-team-a")
+                page.click("#bet-team-a")
             elif time_alvo == "Team B":
-                await page.click("#bet-team-b")
+                page.click("#bet-team-b")
             
             # Set stake
-            await page.fill("#stake-input", str(valor_stake))
+            page.fill("#stake-input", str(valor_stake))
             
             # Place bet
-            await page.click("#place-bet-button")
+            page.click("#place-bet-button")
             
-            await browser.close()
+            browser.close()
             
             return {"status": "bet_placed", "team": time_alvo, "stake": valor_stake}
