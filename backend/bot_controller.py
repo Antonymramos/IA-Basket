@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-"""
-Bot controller to manage background execution and logs.
-"""
+
 
 import asyncio
 import json
