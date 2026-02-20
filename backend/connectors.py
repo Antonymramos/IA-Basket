@@ -16,6 +16,18 @@ TRANSMISSION_CONNECTORS = [
         "type": "live",
         "description": "Feed rapido via WS (ws:// ou wss://).",
     },
+    {
+        "id": "live_http",
+        "label": "Live HTTP/Stream",
+        "type": "live",
+        "description": "Pagina/stream HTTP(S) com leitura automatica de placar.",
+    },
+    {
+        "id": "bllsport_net",
+        "label": "BLLSport (Network)",
+        "type": "live",
+        "description": "Captura placar via network/WS (baixo delay).",
+    },
 ]
 
 BET_CONNECTORS = [

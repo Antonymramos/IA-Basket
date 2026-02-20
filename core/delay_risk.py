@@ -4,7 +4,12 @@ Risk filter for in-play bet acceptance delay.
 """
 
 
-def evaluate_delay_risk(tipo_pontuacao: int, original_stake: float, config: dict) -> dict:
+def evaluate_delay_risk(
+    tipo_pontuacao: int,
+    original_stake: float,
+    config: dict,
+    delay_seconds_override: float | None = None,
+) -> dict:
     risk_cfg = config.get("risk_filters", {})
     enabled = bool(risk_cfg.get("enabled", True))
     if not enabled:
@@ -15,7 +20,11 @@ def evaluate_delay_risk(tipo_pontuacao: int, original_stake: float, config: dict
             "reason": "risk_filter_disabled",
         }
 
-    delay_seconds = float(risk_cfg.get("bet_delay_seconds", 5.0))
+    delay_seconds = (
+        float(delay_seconds_override)
+        if delay_seconds_override is not None
+        else float(risk_cfg.get("bet_delay_seconds", 5.0))
+    )
     min_ev_after_delay = float(risk_cfg.get("min_ev_after_delay", 0.01))
     ev_decay_per_second = float(risk_cfg.get("ev_decay_per_second", 0.01))
 
@@ -30,6 +39,7 @@ def evaluate_delay_risk(tipo_pontuacao: int, original_stake: float, config: dict
             "adjusted_stake": 0.0,
             "ev_after_delay": ev_after_delay,
             "reason": "ev_below_threshold_after_delay",
+            "delay_seconds_used": delay_seconds,
         }
 
     if not risk_cfg.get("stake_scale_with_ev", True):
@@ -38,6 +48,7 @@ def evaluate_delay_risk(tipo_pontuacao: int, original_stake: float, config: dict
             "adjusted_stake": original_stake,
             "ev_after_delay": ev_after_delay,
             "reason": "approved_fixed_stake",
+            "delay_seconds_used": delay_seconds,
         }
 
     min_stake_factor = float(risk_cfg.get("min_stake_factor", 0.4))
@@ -52,4 +63,5 @@ def evaluate_delay_risk(tipo_pontuacao: int, original_stake: float, config: dict
         "adjusted_stake": adjusted_stake,
         "ev_after_delay": ev_after_delay,
         "reason": "approved_scaled_stake",
+        "delay_seconds_used": delay_seconds,
     }

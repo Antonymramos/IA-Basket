@@ -1,60 +1,40 @@
-const { useEffect, useState } = React;
+const { useEffect, useRef, useState } = React;
 
 const e = React.createElement;
 
 function App() {
   const [status, setStatus] = useState(null);
-  const [connectors, setConnectors] = useState({ transmission: [], bet: [] });
-  const [logs, setLogs] = useState([]);
+  const [report, setReport] = useState(null);
+  const [diagnostics, setDiagnostics] = useState(null);
+  const [txnBetStatus, setTxnBetStatus] = useState(null);
+  const [ensembleStats, setEnsembleStats] = useState(null);
+  const [feedbackStats, setFeedbackStats] = useState(null);
+  const [jarvisBriefing, setJarvisBriefing] = useState(null);
+  const [jarvisIntel, setJarvisIntel] = useState(null);
+  const [jarvisBreakdown, setJarvisBreakdown] = useState(null);
+  const [jarvisPatterns, setJarvisPatterns] = useState(null);
+  const [jarvisWeeklySummary, setJarvisWeeklySummary] = useState(null);
+  const [jarvisQuestion, setJarvisQuestion] = useState("");
+  const [jarvisAnswer, setJarvisAnswer] = useState("");
   const [voiceText, setVoiceText] = useState("");
   const [voiceResult, setVoiceResult] = useState("");
-  const [selectedGame, setSelectedGame] = useState("");
-  const [transmissionProvider, setTransmissionProvider] = useState("");
-  const [betProvider, setBetProvider] = useState("");
-  const [liveWsUrl, setLiveWsUrl] = useState("");
-  const [betUrl, setBetUrl] = useState("");
-  const [warning, setWarning] = useState("");
-  const [ttsEnabled, setTtsEnabled] = useState(true);
-  const [voices, setVoices] = useState([]);
-  const [selectedVoice, setSelectedVoice] = useState("");
-  const [assistantStatus, setAssistantStatus] = useState("Aguardando inicializacao");
-  const [assistantReady, setAssistantReady] = useState(false);
-  const [gameScore, setGameScore] = useState(0);
-  const [minGameScore, setMinGameScore] = useState(0);
-  const [whitelistEnabled, setWhitelistEnabled] = useState(false);
-  const [whitelistGames, setWhitelistGames] = useState([]);
-  const [report, setReport] = useState(null);
   const [knowledgePrompt, setKnowledgePrompt] = useState("");
   const [knowledgeResponse, setKnowledgeResponse] = useState("");
   const [knowledgeLoading, setKnowledgeLoading] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [premiumVoice, setPremiumVoice] = useState(true);
+  const [voiceListening, setVoiceListening] = useState(false);
+  const [voiceNeedsGesture, setVoiceNeedsGesture] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [audioError, setAudioError] = useState("");
+
+  const recognitionRef = useRef(null);
+  const keepListeningRef = useRef(false);
 
   const fetchStatus = async () => {
     const res = await fetch("/api/status");
     const data = await res.json();
     setStatus(data);
-    setSelectedGame(data.selected_game || "");
-    setTransmissionProvider(data.transmission_provider || "simulated_feed");
-    setBetProvider(data.bet_provider || "bet_mock");
-    setLiveWsUrl(data.config?.live_feed_ws_url || "");
-    setBetUrl(data.config?.bet_url || "");
-    setWhitelistEnabled(Boolean(data.whitelist_enabled));
-    setWhitelistGames(data.whitelist_games || []);
-    const scoreMap = data.game_scores || {};
-    const currentScore = data.selected_game ? scoreMap[data.selected_game] : undefined;
-    setGameScore(currentScore || 0);
-    setMinGameScore(data.min_game_score || 0);
-  };
-
-  const fetchConnectors = async () => {
-    const res = await fetch("/api/connectors");
-    const data = await res.json();
-    setConnectors(data);
-  };
-
-  const fetchLogs = async () => {
-    const res = await fetch("/api/logs?limit=200");
-    const data = await res.json();
-    setLogs(data.items || []);
   };
 
   const fetchReport = async () => {
@@ -63,201 +43,367 @@ function App() {
     setReport(data);
   };
 
-  useEffect(() => {
-    fetchStatus();
-    fetchConnectors();
-    fetchLogs();
-    fetchReport();
-    loadVoices();
-    if (window.speechSynthesis) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+  const fetchDiagnostics = async () => {
+    const res = await fetch("/api/diagnostics?minutes=120&limit=12");
+    const data = await res.json();
+    setDiagnostics(data);
+  };
+
+  const fetchTxnBetStatus = async () => {
+    try {
+      const res = await fetch("/api/transmission-bet-status?minutes=60&limit=20");
+      const data = await res.json();
+      setTxnBetStatus(data);
+    } catch (err) {
+      console.error("Erro ao carregar status transmissão/bet:", err);
     }
-    const interval = setInterval(() => {
-      fetchStatus();
-      fetchLogs();
-      fetchReport();
-    }, 1500);
-    return () => clearInterval(interval);
+  };
+
+  const fetchEnsembleStats = async () => {
+    try {
+      const res = await fetch("/api/ensemble-stats?minutes=60&limit=30");
+      const data = await res.json();
+      setEnsembleStats(data);
+    } catch (err) {
+      console.error("Erro ao carregar ensemble stats:", err);
+    }
+  };
+
+  const fetchFeedbackStats = async () => {
+    try {
+      const res = await fetch("/api/feedback-stats?minutes=120&limit=50");
+      const data = await res.json();
+      setFeedbackStats(data);
+    } catch (err) {
+      console.error("Erro ao carregar feedback stats:", err);
+    }
+  };
+
+  const fetchJarvisBriefing = async () => {
+    try {
+      const res = await fetch("/api/jarvis/briefing?minutes=120");
+      const data = await res.json();
+      setJarvisBriefing(data);
+    } catch (err) {
+      console.error("Erro ao carregar briefing Jarvis:", err);
+    }
+  };
+
+  const fetchJarvisIntelligence = async () => {
+    try {
+      const res = await fetch("/api/jarvis/intelligence?minutes=120");
+      const data = await res.json();
+      setJarvisIntel(data);
+    } catch (err) {
+      console.error("Erro ao carregar inteligência Jarvis:", err);
+    }
+  };
+
+  const fetchJarvisBreakdown = async () => {
+    try {
+      const res = await fetch("/api/jarvis/decision-breakdown?team_a=Lakers&team_b=Celtics");
+      const data = await res.json();
+      setJarvisBreakdown(data);
+    } catch (err) {
+      console.error("Erro ao carregar decision breakdown:", err);
+    }
+  };
+
+  const fetchJarvisPatterns = async () => {
+    try {
+      const res = await fetch("/api/jarvis/pattern-insights");
+      const data = await res.json();
+      setJarvisPatterns(data);
+    } catch (err) {
+      console.error("Erro ao carregar pattern insights:", err);
+    }
+  };
+
+  const fetchJarvisWeeklySummary = async () => {
+    try {
+      const res = await fetch("/api/jarvis/weekly-summary");
+      const data = await res.json();
+      setJarvisWeeklySummary(data);
+    } catch (err) {
+      console.error("Erro ao carregar resumo semanal:", err);
+    }
+  };
+
+  const askJarvis = async (question) => {
+    try {
+      const res = await fetch("/api/jarvis/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+      const data = await res.json();
+      setJarvisAnswer(data.answer);
+    } catch (err) {
+      console.error("Erro ao perguntar ao Jarvis:", err);
+      setJarvisAnswer("Erro ao processar pergunta.");
+    }
+  };
+
+  const refreshAll = async () => {
+    await Promise.all([fetchStatus(), fetchReport(), fetchDiagnostics(), fetchTxnBetStatus(), fetchEnsembleStats(), fetchFeedbackStats(), fetchJarvisBriefing(), fetchJarvisIntelligence(), fetchJarvisBreakdown(), fetchJarvisPatterns(), fetchJarvisWeeklySummary()]);
+  };
+
+  useEffect(() => {
+    refreshAll();
+    const timer = setInterval(refreshAll, 2000);
+    return () => clearInterval(timer);
   }, []);
 
+  const unlockAudio = async () => {
+    if (audioUnlocked) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      await ctx.resume();
+      setAudioUnlocked(true);
+      setAudioError("");
+      setVoiceResult("Audio liberado.");
+    } catch {
+      setAudioUnlocked(false);
+      setAudioError("Nao foi possivel liberar o audio. Tente clicar novamente.");
+    }
+  };
 
-  const applySelectionPayload = async (payload) => {
-    const response = await fetch("/api/select", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      setWarning(data.detail || "Falha ao aplicar conectores.");
+  useEffect(() => {
+    const onClick = () => unlockAudio();
+    window.addEventListener("click", onClick, { once: true });
+    return () => window.removeEventListener("click", onClick);
+  }, []);
+
+  const speakPremium = async (text) => {
+    if (!ttsEnabled || !text) return false;
+    if (!audioUnlocked) {
+      setVoiceResult("Clique em qualquer lugar para liberar o audio.");
+      setAudioError("Audio bloqueado pelo navegador. Clique para liberar.");
       return false;
     }
-    setWarning("");
-    fetchStatus();
-    return true;
+    try {
+      const res = await fetch("/api/voice/premium", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (data.status === "ok" && data.audio) {
+        const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+        audio.volume = 1;
+        await audio.play();
+        return true;
+      }
+    } catch {
+      return false;
+    }
+    return false;
   };
 
-  const updateSelection = async () => {
-    await applySelectionPayload({
-      selected_game: selectedGame,
-      transmission_provider: transmissionProvider,
-      bet_provider: betProvider,
-      live_feed_ws_url: liveWsUrl,
-      bet_url: betUrl,
-      game_score: Number(gameScore) || 0,
-      min_game_score: Number(minGameScore) || 0,
-      whitelist_enabled: Boolean(whitelistEnabled),
-    });
+  const speak = async (text) => {
+    if (!ttsEnabled || !text) return;
+    if (premiumVoice) {
+      const ok = await speakPremium(text);
+      if (ok) return;
+    }
+
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "pt-BR";
+    utterance.rate = 0.95;
+    utterance.pitch = 0.75;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
   };
 
-  const addWhitelist = async () => {
-    if (!selectedGame) return;
-    await fetch("/api/whitelist/add", {
+  const testVoice = async () => {
+    await speak("Teste de audio do Jarvis.");
+  };
+
+  const openErrorsPanel = async () => {
+    window.location.hash = "#erros";
+    await speak("Abrindo painel dos erros da bet.");
+  };
+
+  const openBetPanel = async () => {
+    const betUrl = status?.config?.bet_url;
+    if (betUrl) {
+      window.open(betUrl, "_blank");
+      await speak("Abrindo painel da bet.");
+    } else {
+      await speak("URL da bet nao configurada.");
+    }
+  };
+
+  const requestKnowledge = async (customPrompt) => {
+    const prompt = (customPrompt || knowledgePrompt || "").trim();
+    if (!prompt) return;
+
+    setKnowledgeLoading(true);
+    if (!customPrompt) {
+      setKnowledgeResponse("");
+    }
+
+    const res = await fetch("/api/knowledge", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ game: selectedGame }),
+      body: JSON.stringify({ prompt }),
     });
-    fetchStatus();
-  };
+    const data = await res.json();
 
-  const removeWhitelist = async (gameName) => {
-    await fetch("/api/whitelist/remove", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ game: gameName }),
-    });
-    fetchStatus();
-  };
+    if (res.ok) {
+      const answer = data.response || "Sem resposta";
+      setKnowledgeResponse(answer);
+      const shortAnswer = answer.split("\n")[0].slice(0, 240);
+      await speak(shortAnswer || "Consulta concluida.");
+    } else {
+      setKnowledgeResponse(data.detail || "Falha na consulta Gemini.");
+    }
 
-  const toggleAutoBet = async (enabled) => {
-    await fetch("/api/control/auto-bet", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled }),
-    });
-    fetchStatus();
-    speak(enabled ? "Aposta automatica ligada" : "Aposta automatica desligada");
-  };
-
-  const controlBot = async (action) => {
-    await fetch(`/api/control/${action}`, { method: "POST" });
-    fetchStatus();
-    speak(action === "start" ? "Bot iniciado" : "Bot parado");
+    setKnowledgeLoading(false);
   };
 
   const sendVoiceCommand = async (text) => {
+    if (!text || !text.trim()) return;
+
+    const lowered = text.toLowerCase();
+    if (/abrir|abre|mostrar|exibir/.test(lowered) && /(painel|dashboard)/.test(lowered) && /(erro|erros|diagn[oó]stico)/.test(lowered)) {
+      await openErrorsPanel();
+      setVoiceResult("Painel de erros aberto.");
+      return;
+    }
+
+    if (/painel/.test(lowered) && /(bet|aposta)/.test(lowered)) {
+      await openBetPanel();
+      setVoiceResult("Painel da bet aberto.");
+      return;
+    }
+
+    if (/busca|pesquisa|analisar|estrat[eé]gia|nba/.test(lowered)) {
+      await requestKnowledge(text);
+      setVoiceResult("Consulta IA executada.");
+      return;
+    }
+
     const res = await fetch("/api/voice/command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
     const data = await res.json();
+
     setVoiceResult(JSON.stringify(data.action || data, null, 2));
-    if (data.action?.action === "set_auto_bet") {
-      speak(data.action.enabled ? "Aposta automatica ligada" : "Aposta automatica desligada");
-    } else if (data.action?.action === "start") {
-      speak("Bot iniciado");
+
+    if (data.action?.action === "start") {
+      await speak("Sistema iniciado.");
     } else if (data.action?.action === "stop") {
-      speak("Bot parado");
-    } else if (data.action?.action === "select_game") {
-      speak(`Jogo selecionado: ${data.action.game}`);
-    } else if (data.status === "noop") {
-      speak("Comando nao reconhecido");
+      await speak("Sistema pausado.");
+    } else if (data.action?.action === "set_auto_bet") {
+      await speak(data.action.enabled ? "Auto bet ativada." : "Auto bet desativada.");
+    } else if (data.action?.action === "open_errors_panel") {
+      await openErrorsPanel();
+    } else if (data.action?.action === "knowledge_query" && data.knowledge_response) {
+      setKnowledgeResponse(data.knowledge_response);
+      await speak(data.knowledge_response.split("\n")[0].slice(0, 220));
     }
-    fetchStatus();
+
+    await refreshAll();
   };
 
-  const speak = (text) => {
-    if (!ttsEnabled || !text) return;
-    if (!window.speechSynthesis) return;
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel();
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "pt-BR";
-    const voice = voices.find((item) => item.name === selectedVoice);
-    if (voice) {
-      utterance.voice = voice;
-    }
-    utterance.rate = 1.05;
-    utterance.pitch = 1.1;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const loadVoices = () => {
-    if (!window.speechSynthesis) return;
-    const available = window.speechSynthesis.getVoices();
-    setVoices(available);
-    if (!selectedVoice && available.length > 0) {
-      const ptVoice = available.find((item) => item.lang && item.lang.startsWith("pt"));
-      setSelectedVoice((ptVoice || available[0]).name);
-    }
-  };
-
-  const testVoice = () => {
-    speak("Teste de voz do Jarvis. Se estiver ouvindo, a voz esta ativa.");
-  };
-
-  const startAssistantFlow = () => {
-    setAssistantReady(true);
-    setAssistantStatus("Assistente ativo");
-    speak("Ola. Sou o Jarvis do Hoops. Preencha os campos e clique em aplicar configuracao.");
-  };
-
-  const applyAssistantSettings = async () => {
-    await updateSelection();
-    speak("Configuracao aplicada. Escolha se deseja iniciar o monitoramento.");
-  };
-
-  const startMonitoring = async () => {
-    await controlBot("start");
-    speak("Monitoramento iniciado.");
-  };
-
-  const requestKnowledge = async () => {
-    if (!knowledgePrompt) return;
-    setKnowledgeLoading(true);
-    setKnowledgeResponse("");
-    const res = await fetch("/api/knowledge", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: knowledgePrompt }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setKnowledgeResponse(data.response || "Sem resposta");
-      speak("Resposta do conhecimento gerada.");
-    } else {
-      setKnowledgeResponse(data.detail || "Falha ao consultar Gemini.");
-    }
-    setKnowledgeLoading(false);
-  };
-
-  const startVoice = () => {
+  const startVoice = (fromGesture = false) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Seu navegador nao suporta reconhecimento de voz.");
-      return;
+    if (!SpeechRecognition) return;
+
+    if (!recognitionRef.current) {
+      const rec = new SpeechRecognition();
+      rec.lang = "pt-BR";
+      rec.interimResults = true;
+      rec.continuous = true;
+      rec.maxAlternatives = 1;
+
+      rec.onstart = () => {
+        setVoiceListening(true);
+        setVoiceResult("Escuta ativa.");
+      };
+
+      rec.onerror = (event) => {
+        setVoiceListening(false);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          setVoiceNeedsGesture(true);
+          setVoiceResult("Clique para liberar microfone e ativar autoescuta.");
+          return;
+        }
+        setVoiceResult(`Erro reconhecimento: ${event.error}`);
+      };
+
+      rec.onend = () => {
+        setVoiceListening(false);
+        if (keepListeningRef.current) {
+          setTimeout(() => {
+            try {
+              rec.start();
+            } catch {
+              // noop
+            }
+          }, 250);
+        }
+      };
+
+      rec.onresult = async (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const result = event.results[i];
+          if (result.isFinal && result[0]?.transcript) {
+            transcript += ` ${result[0].transcript}`;
+          }
+        }
+        transcript = transcript.trim();
+        if (!transcript) return;
+        setVoiceText(transcript);
+        await sendVoiceCommand(transcript);
+      };
+
+      recognitionRef.current = rec;
     }
-    const recognition = new SpeechRecognition();
-    recognition.lang = "pt-BR";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setVoiceText(transcript);
-      sendVoiceCommand(transcript);
-    };
-    recognition.start();
+
+    keepListeningRef.current = true;
+    if (fromGesture) {
+      setVoiceNeedsGesture(false);
+    }
+
+    try {
+      recognitionRef.current.start();
+    } catch {
+      // already running
+    }
   };
+
+  const stopVoice = () => {
+    keepListeningRef.current = false;
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // noop
+      }
+    }
+    setVoiceListening(false);
+  };
+
+  useEffect(() => {
+    const t = setTimeout(() => startVoice(false), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!voiceNeedsGesture) return undefined;
+    const unlock = () => startVoice(true);
+    window.addEventListener("click", unlock, { once: true });
+    return () => window.removeEventListener("click", unlock);
+  }, [voiceNeedsGesture]);
 
   const running = status?.running;
   const autoBet = status?.auto_bet_enabled;
-  const liveFeedInvalid =
-    transmissionProvider === "live_ws" &&
-    liveWsUrl &&
-    !liveWsUrl.startsWith("ws://") &&
-    !liveWsUrl.startsWith("wss://");
 
   return e(
     React.Fragment,
@@ -266,283 +412,372 @@ function App() {
     e(
       "header",
       null,
-      e(
-        "div",
-        null,
-        e("h1", null, "Hoops Jarvis"),
-        e("div", { className: "muted" }, "Painel neural de arbitragem"),
+      e("div", null,
+        e("h1", null, "Jarvis Core"),
+        e("div", { className: "muted" }, "IA operacional minimal"),
         e("div", { className: "hud-line" })
       ),
       e("div", { className: "status" },
         e("div", { className: `status-dot ${running ? "on" : ""}` }),
-        e("div", { className: "badge" }, running ? "Rodando" : "Parado")
+        e("div", { className: "badge" }, running ? "Rodando" : "Parado"),
+        e("button", { className: "primary", style: { width: "auto", marginLeft: "8px" }, onClick: openErrorsPanel }, "Erros"),
+        e("button", { className: "primary", style: { width: "auto", marginLeft: "8px" }, onClick: openBetPanel }, "Bet" )
       )
     ),
     e(
       "div",
-      { className: "container" },
-      e(
-        "div",
-        { className: "assistant-banner" },
-        e("div", null, `Assistente: ${assistantStatus}`),
-        !assistantReady && e(
-          "button",
-          { className: "assistant-button", onClick: startAssistantFlow },
-          "Iniciar assistente"
-        )
+      { className: "ai-shell" },
+      e("div", { className: "ai-core" },
+        e("div", { className: "ai-ring" }),
+        e("div", { className: "ai-ring ai-ring--inner" }),
+        e("div", { className: "ai-pulse" }),
+        e("button", {
+          className: voiceListening ? "secondary" : "primary",
+          onClick: () => (voiceListening ? stopVoice() : startVoice(true)),
+        }, voiceListening ? "Pausar escuta" : "Ativar escuta" )
+      ),
+      e("div", { className: "core-status" },
+        e("div", { className: `core-pill ${audioUnlocked ? "on" : "off"}` }, audioUnlocked ? "Audio liberado" : "Audio bloqueado"),
+        e("div", { className: `core-pill ${voiceListening ? "on" : "off"}` }, voiceListening ? "Escuta ativa" : "Escuta pausada"),
+        voiceNeedsGesture ? e("div", { className: "core-hint" }, "Clique para liberar o microfone.") : null,
+        audioError ? e("div", { className: "core-hint warn" }, audioError) : null
       )
     ),
     e(
       "div",
-      { className: "container" },
+      { className: "container minimal-mode" },
       e(
         "div",
         { className: "card" },
-        e("h2", null, "Selecao de jogo"),
+        e("h2", null, "IA Estratégica"),
         e("div", { className: "field" },
-          e("label", null, "Jogo atual"),
-          e("input", {
-            value: selectedGame,
-            onChange: (ev) => setSelectedGame(ev.target.value),
-            placeholder: "Ex: Lakers x Warriors",
-          })
-        ),
-        e("button", { className: "primary", onClick: updateSelection }, "Salvar selecao")
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Score / Whitelist"),
-        e("div", { className: "field" },
-          e("label", null, "Score do jogo"),
-          e("input", {
-            value: gameScore,
-            onChange: (ev) => setGameScore(ev.target.value),
-            placeholder: "0-100",
-          })
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Score minimo para operar"),
-          e("input", {
-            value: minGameScore,
-            onChange: (ev) => setMinGameScore(ev.target.value),
-            placeholder: "0",
-          })
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Whitelist ativa"),
-          e("button", {
-            className: whitelistEnabled ? "secondary" : "primary",
-            onClick: () => setWhitelistEnabled(!whitelistEnabled),
-          }, whitelistEnabled ? "Desativar" : "Ativar")
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Whitelist jogos"),
-          e("div", { className: "pill-row" },
-            whitelistGames.length === 0
-              ? e("div", { className: "muted" }, "Sem jogos")
-              : whitelistGames.map((game) =>
-                  e("button", {
-                    key: game,
-                    className: "pill",
-                    onClick: () => removeWhitelist(game),
-                  }, game)
-                )
-          )
-        ),
-        e("button", { className: "primary", onClick: addWhitelist }, "Adicionar jogo atual"),
-        e("button", { className: "secondary", onClick: updateSelection, style: { marginTop: "8px" } }, "Salvar regras")
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Fonte / Bet"),
-        e("div", { className: "field" },
-          e("label", null, "Transmissao"),
-          e(
-            "select",
-            {
-              value: transmissionProvider,
-              onChange: (ev) => setTransmissionProvider(ev.target.value),
-            },
-            connectors.transmission.map((item) =>
-              e("option", { key: item.id, value: item.id }, item.label)
-            )
-          )
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Live WS URL"),
-          e("input", {
-            value: liveWsUrl,
-            onChange: (ev) => setLiveWsUrl(ev.target.value),
-            placeholder: "wss://feed.rapido.com",
-          })
-        ),
-        liveFeedInvalid && e("div", { className: "muted", style: { color: "#ffb703" } },
-          "Fonte live precisa ser WebSocket rapido (ws:// ou wss://)."
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Casa / Bet"),
-          e(
-            "select",
-            {
-              value: betProvider,
-              onChange: (ev) => setBetProvider(ev.target.value),
-            },
-            connectors.bet.map((item) =>
-              e("option", { key: item.id, value: item.id }, item.label)
-            )
-          )
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Bet URL"),
-          e("input", {
-            value: betUrl,
-            onChange: (ev) => setBetUrl(ev.target.value),
-            placeholder: "https://www.bet365...",
-          })
-        ),
-        e("button", { className: "primary", onClick: updateSelection }, "Aplicar conectores"),
-        warning && e("div", { className: "muted", style: { marginTop: "8px", color: "#ffb703" } }, warning)
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Controles"),
-        e("div", { className: "field" },
-          e("label", null, "Auto-bet"),
-          e("button", {
-            className: autoBet ? "secondary" : "primary",
-            onClick: () => toggleAutoBet(!autoBet),
-          }, autoBet ? "Desligar" : "Ligar")
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Voz - respostas"),
-          e("button", {
-            className: ttsEnabled ? "secondary" : "primary",
-            onClick: () => setTtsEnabled(!ttsEnabled),
-          }, ttsEnabled ? "Desativar voz" : "Ativar voz")
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Voz do Jarvis"),
-          e(
-            "select",
-            {
-              value: selectedVoice,
-              onChange: (ev) => setSelectedVoice(ev.target.value),
-            },
-            voices.length === 0
-              ? e("option", { value: "" }, "Sem vozes detectadas")
-              : voices.map((voice) =>
-                  e("option", { key: voice.name, value: voice.name }, `${voice.name} (${voice.lang})`)
-                )
-          )
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Teste de voz"),
-          e("button", { className: "primary", onClick: testVoice }, "Falar agora")
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Execucao"),
-          e("button", { className: "primary", onClick: () => controlBot("start") }, "Iniciar"),
-          e("button", { className: "secondary", onClick: () => controlBot("stop"), style: { marginTop: "8px" } }, "Parar")
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Comando por voz"),
-          e("button", { className: "primary", onClick: startVoice }, "Falar comando")
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Texto reconhecido"),
-          e("textarea", {
-            value: voiceText,
-            onChange: (ev) => setVoiceText(ev.target.value),
-            rows: 2,
-          })
-        ),
-        e("button", { className: "secondary", onClick: () => sendVoiceCommand(voiceText) }, "Enviar comando")
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Assistente"),
-        e("div", { className: "assistant-note" },
-          "1) Preencha Selecao de jogo e Fonte/Bet. 2) Ajuste Score/Whitelist. 3) Clique Aplicar."
-        ),
-        e("button", { className: "primary", onClick: applyAssistantSettings }, "Aplicar configuracao"),
-        e("button", { className: "secondary", onClick: startMonitoring, style: { marginTop: "8px" } }, "Iniciar monitoramento"),
-        e("button", { className: "primary", onClick: testVoice, style: { marginTop: "8px" } }, "Falar agora")
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Logs / Sinais"),
-        e(
-          "div",
-          { className: "signal-meter" },
-          Array.from({ length: 10 }).map((_, idx) =>
-            e("div", { key: idx, className: "signal-bar" })
-          )
-        ),
-        e(
-          "div",
-          { className: "log-box" },
-          logs.length === 0
-            ? e("div", { className: "muted" }, "Sem eventos ainda")
-            : logs.map((item, idx) =>
-                e(
-                  "div",
-                  { key: idx, className: "log-item" },
-                  e("div", null, `[${item.event}] ${item.timestamp || ""}`),
-                  e("div", { className: "muted" }, JSON.stringify(item))
-                )
-              )
-        ),
-        e("div", { className: "field" },
-          e("label", null, "Resultado voz"),
-          e("textarea", {
-            value: voiceResult,
-            readOnly: true,
-            rows: 3,
-          })
-        )
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Performance da sessao"),
-        report
-          ? e(
-              "div",
-              { className: "report-grid" },
-              e("div", { className: "report-item" }, `Detectados: ${report.detected}`),
-              e("div", { className: "report-item" }, `Apostados: ${report.bet}`),
-              e("div", { className: "report-item" }, `Bloqueados: ${report.blocked}`),
-              e("div", { className: "report-item" }, `Expirados: ${report.expired}`),
-              e("div", { className: "report-item" }, `Erros: ${report.errors}`)
-            )
-          : e("div", { className: "muted" }, "Carregando...")
-      ),
-      e(
-        "div",
-        { className: "card" },
-        e("h2", null, "Conhecimento"),
-        e("div", { className: "field" },
-          e("label", null, "Pergunte ao Jarvis"),
+          e("label", null, "Objetivo"),
           e("textarea", {
             value: knowledgePrompt,
             onChange: (ev) => setKnowledgePrompt(ev.target.value),
             rows: 3,
-            placeholder: "Ex: Qual estrategia melhorar para delay de 5s?",
+            placeholder: "Ex: últimos jogos da NBA, padrão de vitórias/derrotas e estratégia com margem baixa",
           })
         ),
-        e("button", { className: "primary", onClick: requestKnowledge }, knowledgeLoading ? "Consultando..." : "Consultar Gemini"),
+        e("button", { className: "primary", onClick: () => requestKnowledge() }, knowledgeLoading ? "Consultando..." : "Analisar com Gemini"),
         e("div", { className: "field" },
-          e("label", null, "Resposta"),
-          e("textarea", {
-            value: knowledgeResponse,
-            readOnly: true,
-            rows: 6,
-          })
+          e("label", null, "Resposta IA"),
+          e("textarea", { value: knowledgeResponse, readOnly: true, rows: 7 })
+        )
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "Operação"),
+        e("div", { className: "report-grid" },
+          e("div", { className: "report-item" }, `Auto bet: ${autoBet ? "ON" : "OFF"}`),
+          e("div", { className: "report-item" }, `Escuta: ${voiceListening ? "ON" : "OFF"}`),
+          e("div", { className: "report-item" }, `Detectados: ${report?.detected || 0}`),
+          e("div", { className: "report-item" }, `Erros: ${report?.errors || 0}`)
+        ),
+        e("div", { className: "field" },
+          e("label", null, "Texto reconhecido"),
+          e("textarea", { value: voiceText, onChange: (ev) => setVoiceText(ev.target.value), rows: 2 })
+        ),
+        e("button", { className: "secondary", onClick: () => sendVoiceCommand(voiceText) }, "Executar comando"),
+        e("div", { className: "field" },
+          e("label", null, "Resultado"),
+          e("textarea", { value: voiceResult, readOnly: true, rows: 4 })
+        ),
+        e("div", { className: "field" },
+          e("label", null, "Voz"),
+          e("div", { className: "voice-row" },
+            e("button", { className: premiumVoice ? "secondary" : "primary", onClick: () => setPremiumVoice(!premiumVoice) }, premiumVoice ? "Premium ON" : "Premium OFF"),
+            e("button", { className: ttsEnabled ? "secondary" : "primary", onClick: () => setTtsEnabled(!ttsEnabled) }, ttsEnabled ? "Desativar fala" : "Ativar fala")
+          ),
+          e("div", { className: "voice-row" },
+            e("button", { className: "primary", onClick: unlockAudio }, audioUnlocked ? "Audio liberado" : "Liberar audio"),
+            e("button", { className: "secondary", onClick: testVoice }, "Testar voz")
+          )
+        )
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "Transmissão vs Aposta"),
+        txnBetStatus
+          ? e(
+              React.Fragment,
+              null,
+              e(
+                "div",
+                { className: "report-grid" },
+                e("div", { className: "report-item" }, `DESYNC: ${txnBetStatus.desync?.count || 0}`),
+                e("div", { className: "report-item" }, `Delay Médio: ${(txnBetStatus.delay?.avg_lag_seconds || 0).toFixed(2)}s`),
+                e("div", { className: "report-item" }, `Delay Máximo: ${(txnBetStatus.delay?.max_lag_seconds || 0).toFixed(2)}s`),
+                e("div", { className: "report-item" }, `Pendente: ${txnBetStatus.delay?.count_pending || 0}`)
+              ),
+              txnBetStatus.immediate_feedback && txnBetStatus.immediate_feedback.length > 0
+                ? e(
+                    "div",
+                    { className: "log-box", style: { marginTop: "10px", maxHeight: "150px", overflowY: "auto", background: "#1a2332" } },
+                    e("div", { className: "muted", style: { fontWeight: "bold" } }, "🔔 Feedback Imediato:"),
+                    txnBetStatus.immediate_feedback.map((fb, idx) =>
+                      e("div", { key: idx, className: "log-item", style: { fontSize: "0.9em" } },
+                        e("div", { style: { whiteSpace: "pre-wrap" } }, fb.message),
+                        fb.narration ? e("div", { className: "muted", style: { fontSize: "0.8em" } }, `🔊 "${fb.narration}"`) : null
+                      )
+                    )
+                  )
+                : null,
+              e("div", { className: "log-box", style: { marginTop: "10px", maxHeight: "150px", overflowY: "auto" } },
+                !(txnBetStatus.desync?.recent_events?.length)
+                  ? e("div", { className: "muted" }, "Sem dessincronizações recentes.")
+                  : txnBetStatus.desync.recent_events.map((evt, idx) =>
+                      e("div", { key: idx, className: "log-item" },
+                        e("div", null, `Desync: T(${evt.t_a}-${evt.t_b}) vs B(${evt.b_a}-${evt.b_b}) - ${evt.type}pt`),
+                        e("div", { className: "muted" }, `Δ: +${evt.diff_a}/+${evt.diff_b} (${evt.source || 'unknown'})`)
+                      )
+                    )
+              ),
+              txnBetStatus.delay?.pending_events?.length > 0
+                ? e(
+                    "div",
+                    { className: "log-box", style: { marginTop: "10px", maxHeight: "120px", overflowY: "auto", borderColor: "#ff9500" } },
+                    e("div", { className: "muted warn" }, "⚠ Atrasos Pendentes:"),
+                    txnBetStatus.delay.pending_events.map((evt, idx) =>
+                      e("div", { key: idx, className: "log-item" },
+                        e("div", null, `Idade: ${(evt.age_seconds || 0).toFixed(1)}s (limite: ${(evt.threshold || 0).toFixed(1)}s)`),
+                        e("div", { className: "muted" }, `Meta: T(${evt.target_a}-${evt.target_b}) | Bet: (${evt.bet_a}-${evt.bet_b})`)
+                      )
+                    )
+                  )
+                : null
+            )
+          : e("div", { className: "muted" }, "Carregando..."),
+        e(
+          "div",
+          { className: "report-grid", style: { marginTop: "10px", fontSize: "0.9em" } },
+          e("div", { className: "report-item" }, `Detectados: ${txnBetStatus?.summary?.detections || 0}`),
+          e("div", { className: "report-item" }, `Bloqueados: ${txnBetStatus?.summary?.blocked || 0}`),
+          e("div", { className: "report-item" }, `Expirados: ${txnBetStatus?.summary?.expired || 0}`),
+          e("div", { className: "report-item" }, `Apostados: ${txnBetStatus?.summary?.executed || 0}`)
+        )
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "IA Ensemble Voting"),
+        ensembleStats
+          ? e(
+              React.Fragment,
+              null,
+              e(
+                "div",
+                { className: "report-grid" },
+                e("div", { className: "report-item" }, `Consenso Forte: ${ensembleStats.summary?.consensus_decisions || 0} (≥70%)`),
+                e("div", { className: "report-item" }, `Consenso Fraco: ${ensembleStats.summary?.weak_decisions || 0} (<70%)`),
+                e("div", { className: "report-item" }, `Força Média: ${((ensembleStats.summary?.avg_consensus_strength || 0) * 100).toFixed(1)}%`),
+                e("div", { className: "report-item" }, `Total Decisões: ${ensembleStats.summary?.total_ensemble_decisions || 0}`)
+              ),
+              e(
+                "div",
+                { className: "report-grid", style: { marginTop: "8px", fontSize: "0.85em" } },
+                e("div", { className: "report-item" }, `✓ Executar (Consenso): ${ensembleStats.action_breakdown?.consensus_execute || 0}`),
+                e("div", { className: "report-item" }, `📋 Registrar (Consenso): ${ensembleStats.action_breakdown?.consensus_register || 0}`),
+                e("div", { className: "report-item warn" }, `✓ Executar (Fraco): ${ensembleStats.action_breakdown?.weak_execute || 0}`),
+                e("div", { className: "report-item warn" }, `📋 Registrar (Fraco): ${ensembleStats.action_breakdown?.weak_register || 0}`)
+              ),
+              ensembleStats.recent_decisions && ensembleStats.recent_decisions.length > 0
+                ? e(
+                    "div",
+                    { className: "log-box", style: { marginTop: "10px", maxHeight: "120px", overflowY: "auto" } },
+                    e("div", { className: "muted" }, "Últimas decisões:"),
+                    ensembleStats.recent_decisions.map((d, idx) =>
+                      e("div", { key: idx, className: "log-item" },
+                        e("div", null, `[${d.type.includes("CONSENSUS") ? "✓ Forte" : "⚠ Fraco"}] ${d.action} - ${(d.consensus_strength * 100).toFixed(0)}%`),
+                        e("div", { className: "muted" }, `${d.votes_for_action}/${d.votes_count} modelos votaram`)
+                      )
+                    )
+                  )
+                : null
+            )
+          : e("div", { className: "muted" }, "Carregando..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "📊 Accuracy Tracking (Feedback Loop)"),
+        feedbackStats
+          ? e(
+              React.Fragment,
+              null,
+              feedbackStats.summary && Object.keys(feedbackStats.summary).length > 0
+                ? e(
+                    React.Fragment,
+                    null,
+                    e(
+                      "div",
+                      { className: "report-grid" },
+                      e("div", { className: "report-item" }, `Taxa de Acerto: ${((feedbackStats.summary.win_rate || 0) * 100).toFixed(1)}%`),
+                      e("div", { className: "report-item" }, `Total Apostas: ${feedbackStats.summary.total_bets || 0}`),
+                      e("div", { className: "report-item" }, `Ganhos: ${feedbackStats.summary.wins || 0}`),
+                      e("div", { className: "report-item" }, `Lucro Esperado: ${(feedbackStats.summary.expected_profit || 0).toFixed(2)}`)
+                    ),
+                    feedbackStats.accuracy_by_points && Object.keys(feedbackStats.accuracy_by_points).length > 0
+                      ? e(
+                          "div",
+                          { className: "report-grid", style: { marginTop: "8px", fontSize: "0.85em" } },
+                          Object.entries(feedbackStats.accuracy_by_points).map(([key, stats]) =>
+                            e("div", { key, className: "report-item" },
+                              `${key}: ${((stats.accuracy || 0) * 100).toFixed(1)}% (${stats.wins}/${stats.total})`
+                            )
+                          )
+                        )
+                      : null,
+                    feedbackStats.accuracy_by_consensus && Object.keys(feedbackStats.accuracy_by_consensus).length > 0
+                      ? e(
+                          "div",
+                          { className: "report-grid", style: { marginTop: "8px", fontSize: "0.85em" } },
+                          Object.entries(feedbackStats.accuracy_by_consensus).map(([key, stats]) =>
+                            e("div", { key, className: "report-item" },
+                              `${key}: ${((stats.accuracy || 0) * 100).toFixed(1)}% (${stats.wins}/${stats.total})`
+                            )
+                          )
+                        )
+                      : null,
+                    feedbackStats.success_examples && feedbackStats.success_examples.length > 0
+                      ? e(
+                          "div",
+                          { className: "log-box", style: { marginTop: "10px", maxHeight: "100px", overflowY: "auto" } },
+                          e("div", { className: "muted" }, "Exemplos de sucesso (Few-Shot):"),
+                          feedbackStats.success_examples.map((ex, idx) =>
+                            e("div", { key: idx, className: "log-item", style: { fontSize: "0.8em" } },
+                              e("div", null, `✓ ${ex.tipo_pontuacao}pt, EV=${(ex.ev_score || 0).toFixed(2)}, Consenso=${((ex.consensus_strength || 0) * 100).toFixed(0)}%`),
+                              e("div", { className: "muted" }, `Delay: ${(ex.delay_seconds || 0).toFixed(1)}s`)
+                            )
+                          )
+                        )
+                      : null
+                  )
+                : e("div", { className: "muted" }, "Sem dados de apostas ainda...")
+            )
+          : e("div", { className: "muted" }, "Carregando..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "🧠 Jarvis Briefing"),
+        jarvisBriefing && jarvisBriefing.briefing
+          ? e(
+              "div",
+              { className: "log-box", style: { maxHeight: "200px", overflowY: "auto", fontSize: "0.9em", whiteSpace: "pre-wrap" } },
+              jarvisBriefing.briefing
+            )
+          : e("div", { className: "muted" }, "Carregando inteligência Jarvis..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "🎯 Análise de Decisão"),
+        jarvisBreakdown && jarvisBreakdown.breakdown && jarvisBreakdown.breakdown.components
+          ? e(
+              "div",
+              { className: "report-grid" },
+              e("div", { className: "report-item", style: { fontWeight: "bold" } }, 
+                `${jarvisBreakdown.breakdown.matchup} - Confiança: ${jarvisBreakdown.breakdown.final_confidence.percentage}%`
+              ),
+              jarvisBreakdown.breakdown.components.map((comp, idx) =>
+                e("div", { key: idx, className: "report-item", style: { fontSize: "0.85em" } },
+                  `${comp.emoji} ${comp.name}: ${(comp.impact).toFixed(2)} (${comp.description})`
+                )
+              )
+            )
+          : e("div", { className: "muted" }, "Carregando análise..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "📊 Padrões Descobertos"),
+        jarvisPatterns && jarvisPatterns.insights
+          ? e(
+              "div",
+              null,
+              e("div", { className: "report-item" }, [
+                e("div", null, "🕐 Melhor Hora: " + (jarvisPatterns.insights.best_hour_description || "Analisando...")),
+                e("div", null, "🎯 Melhor Tipo: " + (jarvisPatterns.insights.best_game_type || "N/A")),
+                e("div", null, "📈 Taxa de Sucesso: " + (((jarvisPatterns.insights.success_rate || 0) * 100).toFixed(1) + "%")),
+              ]),
+              jarvisPatterns.insights.recommendation
+                ? e("div", { className: "log-box", style: { marginTop: "10px", fontSize: "0.9em" } }, jarvisPatterns.insights.recommendation)
+                : null
+            )
+          : e("div", { className: "muted" }, "Carregando padrões..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "📈 Resumo Semanal"),
+        jarvisWeeklySummary && jarvisWeeklySummary.summary_text
+          ? e(
+              "div",
+              { className: "log-box", style: { maxHeight: "150px", overflowY: "auto", fontSize: "0.9em", whiteSpace: "pre-wrap" } },
+              jarvisWeeklySummary.summary_text
+            )
+          : e("div", { className: "muted" }, "Carregando resumo..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "💬 Chat com Jarvis"),
+        e(
+          "div",
+          null,
+          e("input", {
+            type: "text",
+            placeholder: "Pergunta para Jarvis (ex: Por que bloqueou? Qual meu melhor horário?)",
+            value: jarvisQuestion,
+            onChange: (ev) => setJarvisQuestion(ev.target.value),
+            onKeyPress: (ev) => {
+              if (ev.key === "Enter") {
+                askJarvis(jarvisQuestion);
+                setJarvisQuestion("");
+              }
+            },
+            style: { width: "80%", padding: "8px", marginRight: "10px" }
+          }),
+          e("button", {
+            onClick: () => {
+              askJarvis(jarvisQuestion);
+              setJarvisQuestion("");
+            },
+            style: { padding: "8px 16px", cursor: "pointer" }
+          }, "Enviar")
+        ),
+        jarvisAnswer
+          ? e("div", { className: "log-box", style: { marginTop: "10px", fontSize: "0.9em", whiteSpace: "pre-wrap" } }, jarvisAnswer)
+          : e("div", { className: "muted", style: { marginTop: "10px" } }, "Faça uma pergunta para Jarvis responder..."),
+      ),
+      e(
+        "div",
+        { className: "card" },
+        e("h2", null, "Painel de Erros"),
+        diagnostics
+          ? e(
+              "div",
+              { className: "report-grid" },
+              e("div", { className: "report-item" }, `Bloqueio: ${((diagnostics.risk_metrics?.blocked_rate_vs_detected || 0) * 100).toFixed(1)}%`),
+              e("div", { className: "report-item" }, `Expiração: ${((diagnostics.risk_metrics?.expired_rate_vs_detected || 0) * 100).toFixed(1)}%`),
+              e("div", { className: "report-item" }, `Erro: ${((diagnostics.risk_metrics?.error_rate_vs_detected || 0) * 100).toFixed(1)}%`),
+              e("div", { className: "report-item" }, `Eventos: ${diagnostics.window_events || 0}`)
+            )
+          : e("div", { className: "muted" }, "Carregando..."),
+        e(
+          "div",
+          { className: "log-box", style: { marginTop: "10px" } },
+          !(diagnostics?.recent_errors?.length)
+            ? e("div", { className: "muted" }, "Sem erros recentes.")
+            : diagnostics.recent_errors.map((item, idx) =>
+                e("div", { key: idx, className: "log-item" },
+                  e("div", null, `[${item.event}] ${item.game || ""}`),
+                  e("div", { className: "muted" }, item.message || "sem detalhe")
+                )
+              )
         )
       )
     )

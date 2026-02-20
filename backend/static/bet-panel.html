@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Apostas & Transmissão | Hoops Jarvis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles-bet-panel.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="header-title">🎰 PAINEL DE APOSTAS & TRANSMISSÃO</h1>
+            <div class="header-status">
+                <div class="status-dot"></div>
+                <span id="statusText">Conectado</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-back" onclick="goToDashboard()">← Voltar ao Dashboard</button>
+        </div>
+    </header>
+
+    <div class="container" id="mainContent">
+        <!-- JOGO ATUAL - SEÇÃO PRINCIPAL -->
+        <div id="currentGameSection" style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(255, 0, 128, 0.05) 100%); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h2 style="font-size: 1.2rem; color: var(--neon-cyan); text-shadow: 0 0 18px rgba(0, 217, 255, 0.5);">🎮 JOGO ATUAL</h2>
+                <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.9rem; background: rgba(0, 255, 136, 0.15); border: 1px solid var(--neon-green); border-radius: 8px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--neon-green); animation: pulse 1.5s infinite;"></div>
+                    <span style="font-weight: 700; font-size: 0.85rem;">AO VIVO</span>
+                </div>
+            </div>
+
+            <div id="currentAlertBanner" style="display: none; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; background: rgba(255, 0, 128, 0.1); border: 1px solid var(--neon-pink);">
+                <div id="currentAlertText" style="font-size: 0.85rem; font-weight: 700; color: var(--neon-pink);">⚠️ Alerta de transmissão</div>
+                <button id="alertSoundToggle" style="background: rgba(0, 0, 0, 0.35); border: 1px solid var(--neon-cyan); color: var(--text-primary); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;">🔔 Som: ON</button>
+            </div>
+
+            <!-- Compact Row -->
+            <div id="currentGameRow" style="display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;">
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Jogo</div>
+                    <div style="font-size: 0.95rem; font-weight: 700;" id="currentGameCompactName">Carregando...</div>
+                </div>
+                <div style="background: rgba(0, 217, 255, 0.08); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Placar</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--neon-cyan);" id="currentGameCompactPlacar">-- : --</div>
+                </div>
+                <div style="background: rgba(255, 255, 0, 0.08); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(255, 255, 0, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Quarter</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--neon-yellow);" id="currentGameCompactQuarter">Q0</div>
+                </div>
+                <div style="background: rgba(0, 255, 136, 0.08); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 255, 136, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Qualidade</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--neon-green);" id="currentGameCompactQuality">--%</div>
+                </div>
+                <div style="background: rgba(0, 217, 255, 0.08); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
+                    <div style="font-size: 0.95rem; font-weight: 700;" id="currentGameCompactStatus">OK</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Delay</div>
+                    <div style="font-size: 0.95rem; font-weight: 700;" id="currentGameCompactDelay">0s</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(255, 120, 0, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Desync</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--neon-orange);" id="currentGameCompactDesyncs">0</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 255, 136, 0.25); text-align: center;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Saude</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--neon-green);" id="currentGameCompactHealth">100%</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Fonte TX</div>
+                    <div style="font-size: 0.85rem; font-weight: 700;" id="currentTxSource">N/A</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Fonte Bet</div>
+                    <div style="font-size: 0.85rem; font-weight: 700;" id="currentBetSource">N/A</div>
+                </div>
+                <div style="background: rgba(0, 255, 136, 0.12); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 255, 136, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Recomendacao</div>
+                    <div style="font-size: 0.9rem; font-weight: 700;" id="currentCompactRecommendation">✅ PODE</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Risco</div>
+                    <div style="font-size: 0.85rem; font-weight: 700;" id="currentCompactRisk">Baixo</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Conf.</div>
+                    <div style="font-size: 0.85rem; font-weight: 700;" id="currentCompactConfidence">0%</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.35); padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid rgba(0, 217, 255, 0.25);">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Atualiza</div>
+                    <div style="font-size: 0.85rem; font-weight: 700;" id="countdownTimer">3s</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Estatísticas Rápidas -->
+        <div class="bet-grid">
+            <!-- Card 1: Estatísticas de Apostas -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📊 Estatísticas de Apostas</div>
+                        <div class="card-subtitle">Últimas 60 minutos</div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box info">
+                        <div class="stat-label">Detectadas</div>
+                        <div class="stat-value" id="stat-detectadas">-</div>
+                    </div>
+                    <div class="stat-box success">
+                        <div class="stat-label">Executadas</div>
+                        <div class="stat-value" id="stat-executadas">-</div>
+                    </div>
+                    <div class="stat-box danger">
+                        <div class="stat-label">Bloqueadas</div>
+                        <div class="stat-value" id="stat-bloqueadas">-</div>
+                    </div>
+                    <div class="stat-box warning">
+                        <div class="stat-label">Expiradas</div>
+                        <div class="stat-value" id="stat-expiradas">-</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 217, 255, 0.1); font-size: 0.9rem; color: var(--text-secondary);">
+                    <strong>Taxa de Sucesso:</strong> <span id="taxa-sucesso" style="color: var(--neon-green); font-weight: 700;">-</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Histórico de Apostas (Centro) -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📝 Histórico de Apostas Recentes</div>
+                        <div class="card-subtitle">Últimas 20 apostas</div>
+                    </div>
+                </div>
+                <div class="bet-list" id="betList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <span>Carregando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Métricas de Transmissão -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📡 Qualidade da Transmissão</div>
+                        <div class="card-subtitle">Saúde do sinal</div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box info">
+                        <div class="stat-label">Desyncs</div>
+                        <div class="stat-value" id="stat-desyncs">-</div>
+                    </div>
+                    <div class="stat-box warning">
+                        <div class="stat-label">Delays</div>
+                        <div class="stat-value" id="stat-delays">-</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 217, 255, 0.1);">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        <strong>Lag Médio:</strong><br>
+                        <span id="lag-medio" style="color: var(--neon-cyan); font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 1.2rem;">-ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: OTT Analysis -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">🌐 Análise OTT</div>
+                        <div class="card-subtitle">Stream de transmissão & placar</div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box info">
+                        <div class="stat-label">Health Score</div>
+                        <div class="stat-value" id="ott-health-score">-</div>
+                    </div>
+                    <div class="stat-box success">
+                        <div class="stat-label">Sync Quality</div>
+                        <div class="stat-value" id="ott-sync-quality">-</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 217, 255, 0.1); display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <strong>Status OTT:</strong> <span id="ott-status" style="color: var(--neon-cyan); font-weight: 700;">-</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <strong>Fonte:</strong> <span id="ott-sources" style="color: var(--neon-orange); font-weight: 600; font-family: 'JetBrains Mono', monospace;">-</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <strong>Placares:</strong> <span id="ott-placars" style="color: var(--neon-green); font-weight: 700;">-</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Seção de Desyncs -->
+        <div class="card" id="desyncCard" style="display: none; margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">⚠️ Eventos de Dessincronização (DESYNC)</div>
+                    <div class="card-subtitle">Diferenças entre transmissão e bet</div>
+                </div>
+            </div>
+            <div class="transmission-section">
+                <div class="transmission-list" id="desyncList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <div class="empty-state-text">Nenhum desync detectado no período</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Delays -->
+        <div class="card" id="delayCard" style="display: none; margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">⏱️ Alertas de Delay/Lag</div>
+                    <div class="card-subtitle">Atrasos na transmissão vs bet</div>
+                </div>
+            </div>
+            <div class="delay-alerts" id="delayList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">✓</div>
+                    <div class="empty-state-text">Nenhum delay detectado no período</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Análise de Decisão -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">🧠 Análise de Decisão</div>
+                    <div class="card-subtitle">Transmissão vs Aposta - Taxa de Acerto</div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="stat-box success">
+                    <div class="stat-label">Taxa de Acerto</div>
+                    <div class="stat-value" id="decision-accuracy">-</div>
+                </div>
+                <div class="stat-box info">
+                    <div class="stat-label">Sinais Processados</div>
+                    <div class="stat-value" id="decision-signals">-</div>
+                </div>
+            </div>
+
+            <!-- Decision Breakdown -->
+            <div style="background: rgba(0, 217, 255, 0.05); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+                <div style="font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">💡 Breakdown de Decisões:</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(0, 255, 136, 0.1); border-radius: 8px; border: 1px solid rgba(0, 255, 136, 0.2);">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">✅ Executadas</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-green); font-family: 'JetBrains Mono', monospace;" id="decision-executed-pct">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="decision-executed-count">0</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(255, 51, 102, 0.1); border-radius: 8px; border: 1px solid rgba(255, 51, 102, 0.2);">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">🚫 Bloqueadas</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-pink); font-family: 'JetBrains Mono', monospace;" id="decision-blocked-pct">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="decision-blocked-count">0</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(255, 215, 0, 0.1); border-radius: 8px; border: 1px solid rgba(255, 215, 0, 0.2);">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">⏰ Expiradas</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-yellow); font-family: 'JetBrains Mono', monospace;" id="decision-expired-pct">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="decision-expired-count">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conflicts Section -->
+            <div>
+                <div style="font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">⚠️ Conflitos Detectados (Transmissão vs Aposta):</div>
+                <div id="conflictsList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <div class="empty-state-text">Nenhum conflito detectado</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Configuração de URLs -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">🔗 Configuração de URLs</div>
+                    <div class="card-subtitle">Transmissão e Bet365</div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Transmission Provider -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">📡 Tipo de Transmissão:</label>
+                    <select id="transmissionProvider" style="
+                        padding: 0.75rem;
+                        background: rgba(26, 32, 56, 0.5);
+                        border: 1px solid rgba(0, 217, 255, 0.3);
+                        border-radius: 8px;
+                        color: var(--text-primary);
+                        font-size: 0.95rem;
+                        font-family: 'Inter', sans-serif;
+                        cursor: pointer;
+                    ">
+                        <option value="live_http">Live HTTP/Stream (https://)</option>
+                        <option value="bllsport_net">BLLSport (Network - baixo delay)</option>
+                        <option value="live_ws">WebSocket Rápido (ws:// ou wss://)</option>
+                        <option value="simulated_feed">Simulado (Testes)</option>
+                    </select>
+                </div>
+
+                <!-- Transmission URL -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🎥 URL da Transmissão:</label>
+                    <input 
+                        id="transmissionUrl" 
+                        type="text" 
+                        placeholder="https://bllsport.com/view/..." 
+                        style="
+                            padding: 0.75rem;
+                            background: rgba(26, 32, 56, 0.5);
+                            border: 1px solid rgba(0, 217, 255, 0.3);
+                            border-radius: 8px;
+                            color: var(--text-primary);
+                            font-size: 0.85rem;
+                            font-family: 'JetBrains Mono', monospace;
+                        "
+                    />
+                </div>
+
+                <!-- Bet365 URL -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🎰 URL da Bet365:</label>
+                    <input 
+                        id="betUrl" 
+                        type="text" 
+                        placeholder="https://www.bet365.bet.br/#/IP/EV..." 
+                        style="
+                            padding: 0.75rem;
+                            background: rgba(26, 32, 56, 0.5);
+                            border: 1px solid rgba(0, 217, 255, 0.3);
+                            border-radius: 8px;
+                            color: var(--text-primary);
+                            font-size: 0.85rem;
+                            font-family: 'JetBrains Mono', monospace;
+                        "
+                    />
+                </div>
+
+                <!-- Save Button -->
+                <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                    <button id="saveUrlsBtn" style="
+                        padding: 0.75rem 1.5rem;
+                        background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+                        border: none;
+                        border-radius: 8px;
+                        color: white;
+                        font-weight: 700;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    ">💾 Salvar URLs</button>
+                    <span id="urlMessage" style="font-size: 0.9rem; font-weight: 600; display: none;"></span>
+                </div>
+
+                <!-- Instructions -->
+                <div style="
+                    margin-top: 1rem;
+                    padding: 1rem;
+                    background: rgba(0, 217, 255, 0.1);
+                    border-radius: 8px;
+                    border: 1px solid rgba(0, 217, 255, 0.3);
+                    font-size: 0.85rem;
+                    line-height: 1.6;
+                    color: var(--text-secondary);
+                ">
+                    <div style="font-weight: 700; margin-bottom: 0.5rem; color: var(--neon-cyan);">💡 Como configurar:</div>
+                    <div>1. 📡 Escolha o tipo de transmissão (HTTP ou WebSocket)</div>
+                    <div>2. 🎥 Cole a URL da transmissão (BLLSport, StreamEast, etc)</div>
+                    <div>3. 🎰 Cole a URL da Bet365 do jogo específico</div>
+                    <div>4. 💾 Clique em "Salvar URLs" (backup automático criado)</div>
+                    <div style="margin-top: 0.5rem; color: var(--text-muted);">⚠️ Sistema precisa ser reiniciado após mudança de tipo de transmissão</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 7: ANÁLISE DE DESEMPENHO AVANÇADA -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">📊 Análise de Desempenho Avançada</div>
+            
+            <!-- Subseção: Quarters -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 1rem; font-size: 1rem;">🎮 Desempenho por Quarters (Q1-Q4)</h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                    <div class="metric-box" style="background: rgba(0, 217, 255, 0.05);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q1</div>
+                        <div id="quarter-q1-wins" style="font-size: 1.3rem; font-weight: 700; color: var(--neon-green);">0/0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Taxa: <span id="quarter-q1-rate">0%</span></div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(255, 193, 7, 0.05);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q2</div>
+                        <div id="quarter-q2-wins" style="font-size: 1.3rem; font-weight: 700; color: var(--neon-yellow);">0/0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Taxa: <span id="quarter-q2-rate">0%</span></div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(255, 87, 34, 0.05);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q3</div>
+                        <div id="quarter-q3-wins" style="font-size: 1.3rem; font-weight: 700; color: var(--neon-orange);">0/0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Taxa: <span id="quarter-q3-rate">0%</span></div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(233, 30, 99, 0.05);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q4</div>
+                        <div id="quarter-q4-wins" style="font-size: 1.3rem; font-weight: 700; color: var(--neon-pink);">0/0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Taxa: <span id="quarter-q4-rate">0%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subseção: Confidence Quartiles -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 1rem; font-size: 1rem;">🎯 Distribuição por Confiança</h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                    <div style="background: rgba(200, 50, 50, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--neon-orange);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q1: 0-25%</div>
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.5rem;">
+                            <div id="conf-q1-rate" style="font-size: 1.1rem; font-weight: 700; color: var(--neon-orange);">0%</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">(<span id="conf-q1-wins">0</span>/<span id="conf-q1-total">0</span>)</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--neon-yellow);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q2: 25-50%</div>
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.5rem;">
+                            <div id="conf-q2-rate" style="font-size: 1.1rem; font-weight: 700; color: var(--neon-yellow);">0%</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">(<span id="conf-q2-wins">0</span>/<span id="conf-q2-total">0</span>)</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(76, 175, 80, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--neon-green);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q3: 50-75%</div>
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.5rem;">
+                            <div id="conf-q3-rate" style="font-size: 1.1rem; font-weight: 700; color: var(--neon-green);">0%</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">(<span id="conf-q3-wins">0</span>/<span id="conf-q3-total">0</span>)</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(0, 217, 255, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--neon-cyan);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Q4: 75-100%</div>
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.5rem;">
+                            <div id="conf-q4-rate" style="font-size: 1.1rem; font-weight: 700; color: var(--neon-cyan);">0%</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">(<span id="conf-q4-wins">0</span>/<span id="conf-q4-total">0</span>)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subseção: Stages -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 1rem; font-size: 1rem;">⏰ Desempenho por Fase</h3>
+                <div style="display: grid; gap: 0.75rem;">
+                    <div style="background: rgba(200, 50, 50, 0.1); padding: 0.8rem; border-radius: 6px; border-left: 3px solid var(--neon-pink); display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">🔴 Pré-Jogo</span>
+                        <span style="color: var(--neon-pink); font-weight: 700;"><span id="stage-pre-wins">0</span>/<span id="stage-pre-total">0</span> (<span id="stage-pre-rate">0%</span>)</span>
+                    </div>
+                    <div style="background: rgba(255, 193, 7, 0.1); padding: 0.8rem; border-radius: 6px; border-left: 3px solid var(--neon-yellow); display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">🟡 Início (0-15min)</span>
+                        <span style="color: var(--neon-yellow); font-weight: 700;"><span id="stage-inicio-wins">0</span>/<span id="stage-inicio-total">0</span> (<span id="stage-inicio-rate">0%</span>)</span>
+                    </div>
+                    <div style="background: rgba(76, 175, 80, 0.1); padding: 0.8rem; border-radius: 6px; border-left: 3px solid var(--neon-green); display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">🟢 Meio (15-30min)</span>
+                        <span style="color: var(--neon-green); font-weight: 700;"><span id="stage-meio-wins">0</span>/<span id="stage-meio-total">0</span> (<span id="stage-meio-rate">0%</span>)</span>
+                    </div>
+                    <div style="background: rgba(0, 217, 255, 0.1); padding: 0.8rem; border-radius: 6px; border-left: 3px solid var(--neon-cyan); display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">🔵 Final (30min+)</span>
+                        <span style="color: var(--neon-cyan); font-weight: 700;"><span id="stage-final-wins">0</span>/<span id="stage-final-total">0</span> (<span id="stage-final-rate">0%</span>)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subseção: Key Metrics -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 1rem; font-size: 1rem;">📈 4 Métricas Principais</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="metric-box" style="background: rgba(76, 175, 80, 0.1); border: 1px solid var(--neon-green);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Taxa de Acerto</div>
+                        <div id="metric-win-rate" style="font-size: 2rem; font-weight: 700; color: var(--neon-green);">0%</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(255, 193, 7, 0.1); border: 1px solid var(--neon-yellow);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">ROI</div>
+                        <div id="metric-roi" style="font-size: 2rem; font-weight: 700; color: var(--neon-yellow);">0%</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(255, 87, 34, 0.1); border: 1px solid var(--neon-orange);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Odds Médio</div>
+                        <div id="metric-odds" style="font-size: 2rem; font-weight: 700; color: var(--neon-orange);">0.00</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(0, 217, 255, 0.1); border: 1px solid var(--neon-cyan);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Expected Value</div>
+                        <div id="metric-ev" style="font-size: 2rem; font-weight: 700; color: var(--neon-cyan);">0.000</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subseção: Bankroll Management -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 1rem; font-size: 1rem;">💰 Gestão de Bankroll (4 Lotes)</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div style="background: rgba(76, 175, 80, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--neon-green);">
+                        <div style="font-weight: 700; color: var(--neon-green); margin-bottom: 0.5rem;">🛡️ Conservador</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div>Alocação: <strong id="bankroll-cons-alloc">0</strong> (30%)</div>
+                            <div>Risco: <strong>1%</strong> por aposta</div>
+                            <div>ROI Esp.: <strong id="bankroll-cons-roi">0%</strong></div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">✓ Seguro e estável</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--neon-yellow);">
+                        <div style="font-weight: 700; color: var(--neon-yellow); margin-bottom: 0.5rem;">⚖️ Moderado</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div>Alocação: <strong id="bankroll-mod-alloc">0</strong> (40%)</div>
+                            <div>Risco: <strong>2%</strong> por aposta</div>
+                            <div>ROI Esp.: <strong id="bankroll-mod-roi">0%</strong></div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">⚖️ Equilíbrio ideal</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255, 87, 34, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--neon-orange);">
+                        <div style="font-weight: 700; color: var(--neon-orange); margin-bottom: 0.5rem;">⚡ Agressivo</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div>Alocação: <strong id="bankroll-agg-alloc">0</strong> (20%)</div>
+                            <div>Risco: <strong>5%</strong> por aposta</div>
+                            <div>ROI Esp.: <strong id="bankroll-agg-roi">0%</strong></div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">⚠️ Alto risco/recompensa</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(233, 30, 99, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--neon-pink);">
+                        <div style="font-weight: 700; color: var(--neon-pink); margin-bottom: 0.5rem;">🔄 Recuperação</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div>Alocação: <strong id="bankroll-rec-alloc">0</strong> (10%)</div>
+                            <div>Risco: <strong>3%</strong> por aposta</div>
+                            <div>ROI Esp.: <strong id="bankroll-rec-roi">0%</strong></div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">🔄 Recuperação de perdas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subseção: Recomendações -->
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0, 217, 255, 0.2);">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 1rem; font-size: 1rem;">💡 Recomendações Inteligentes</h3>
+                <div id="recommendations-list" style="display: grid; gap: 0.75rem;">
+                    <!-- Recommendations will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app-bet-panel.js"></script>
+</body>
+</html>
