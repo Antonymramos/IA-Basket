@@ -1,7 +1,0 @@
-{
-  "bet_url": "https://example-betting-site.com",
-  "live_feed_ws_url": "ws://example-live-feed.com",
-  "stake": 10.0,
-  "banca": 1000.0,
-  "team_names": ["Team A", "Team B"]
-}

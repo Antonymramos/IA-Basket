@@ -1,0 +1,25 @@
+2026/02/21-11:45:42.375 5788 Reusing MANIFEST C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_profile\Default\IndexedDB\https_www.bet365.bet.br_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/21-11:45:42.375 5788 Recovering log #13
+2026/02/21-11:45:42.375 5788 Reusing old log C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_profile\Default\IndexedDB\https_www.bet365.bet.br_0.indexeddb.leveldb/000013.log 
+2026/02/21-11:45:42.376 5788 Delete type=2 #11
+2026/02/21-11:45:42.379 44b8 Level-0 table #18: started
+2026/02/21-11:45:42.381 44b8 Level-0 table #18: 2049 bytes OK
+2026/02/21-11:45:42.382 44b8 Delete type=0 #13
+2026/02/21-11:45:42.382 5788 Manual compaction at level-0 from '\x00\x07\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x08\x00\x00\x00' @ 0 : 0; will stop at '\x00\x07\x00\x00\x05' @ 283 : 1
+2026/02/21-11:45:42.382 5788 Compacting 1@0 + 1@1 files
+2026/02/21-11:45:42.383 5788 Generated table #19@0: 82 keys, 2079 bytes
+2026/02/21-11:45:42.383 5788 Compacted 1@0 + 1@1 files => 2079 bytes
+2026/02/21-11:45:42.384 5788 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/21-11:45:42.384 5788 Delete type=2 #18
+2026/02/21-11:45:42.384 5788 Manual compaction at level-0 from '\x00\x07\x00\x00\x05' @ 283 : 1 .. '\x00\x08\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/02/21-11:46:48.700 44b8 Level-0 table #21: started
+2026/02/21-11:46:48.701 44b8 Level-0 table #21: 2061 bytes OK
+2026/02/21-11:46:48.702 44b8 Delete type=2 #15
+2026/02/21-11:46:48.702 44b8 Delete type=0 #17
+2026/02/21-11:46:48.702 5788 Manual compaction at level-0 from '\x00\x08\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x09\x00\x00\x00' @ 0 : 0; will stop at '\x00\x08\x00\x00\x05' @ 326 : 1
+2026/02/21-11:46:48.702 5788 Compacting 1@0 + 1@1 files
+2026/02/21-11:46:48.704 5788 Generated table #22@0: 82 keys, 2081 bytes
+2026/02/21-11:46:48.704 5788 Compacted 1@0 + 1@1 files => 2081 bytes
+2026/02/21-11:46:48.704 5788 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/21-11:46:48.704 5788 Delete type=2 #21
+2026/02/21-11:46:48.705 5788 Manual compaction at level-0 from '\x00\x08\x00\x00\x05' @ 326 : 1 .. '\x00\x09\x00\x00\x00' @ 0 : 0; will stop at (end)

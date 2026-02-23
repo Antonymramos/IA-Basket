@@ -1,0 +1,6 @@
+2026/02/21-11:48:00.934 739c Reusing MANIFEST C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_cdp_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/02/21-11:48:00.937 739c Recovering log #3
+2026/02/21-11:48:00.939 739c Reusing old log C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_cdp_profile\Default\Local Storage\leveldb/000003.log 
+2026/02/21-11:59:08.475 343c Level-0 table #5: started
+2026/02/21-11:59:08.479 343c Level-0 table #5: 38171 bytes OK
+2026/02/21-11:59:08.481 343c Delete type=0 #3

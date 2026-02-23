@@ -1,0 +1,128 @@
+{
+  "mode": "live",
+  "decision_engine": "compare",
+  "compare_execute": "local_rules",
+  "gemini_model": "gemini-2.5-pro",
+  "selected_game": "NBA - Auto",
+  "transmission_provider": "bllsport_net",
+  "bet_provider": "bet_scraper",
+  "whitelist_enabled": false,
+  "whitelist_games": [
+    "NBA - Auto"
+  ],
+  "min_game_score": 0.0,
+  "game_scores": {
+    "NBA": 0.0,
+    "NBA - Auto": 0.0
+  },
+  "cooldown_seconds": 6.0,
+  "auto_bet_enabled": false,
+  "prompt_auto_bet_on_start": false,
+  "dry_run": true,
+  "signal_ttl_seconds": 6.0,
+  "loop_interval_seconds": 0.5,
+  "max_iterations": 100,
+  "risk_filters": {
+    "enabled": true,
+    "bet_delay_seconds": 5.0,
+    "min_ev_after_delay": 0.02,
+    "ev_decay_per_second": 0.01,
+    "ev_edge_by_points": {
+      "2": 0.06,
+      "3": 0.09
+    },
+    "stake_scale_with_ev": true,
+    "min_stake_factor": 0.5,
+    "max_stake_factor": 1.2
+  },
+  "automation": {
+    "auto_fill_backend_fields": true,
+    "stop_on_auth_required": false,
+    "max_feed_warnings": 30,
+    "max_bets_per_session": 50,
+    "max_blocked_streak": 40
+  },
+  "delay_learning": {
+    "enabled": true,
+    "model_path": "data/delay_model.json",
+    "max_samples": 500,
+    "min_samples_for_override": 8
+  },
+  "watchdog_enabled": true,
+  "watchdog_timeout_seconds": 20,
+  "watchdog_restart_on_stall": true,
+  "notifications": {
+    "telegram_enabled": false,
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "events": [
+      "DETECTADO",
+      "APOSTOU",
+      "AUTH_REQUIRED",
+      "AUTO_STOP",
+      "WATCHDOG"
+    ]
+  },
+  "bet_url": "https://www.bet365.bet.br/#/IP/test",
+  "bet_cdp_endpoint": "http://localhost:9222",
+  "live_feed_headless": false,
+  "live_feed_user_data_dir": "data/bllsport_profile",
+  "bet_headless": false,
+  "bet_user_data_dir": "data/bet365_profile",
+  "dolphin_api_url": "http://127.0.0.1:3001/v1.0",
+  "dolphin_profile_id": "745872411",
+  "dolphin_jwt_token": null,
+  "live_feed_ws_url": "wss://exemplo.com/live",
+  "stake": 10.0,
+  "banca": 1000.0,
+  "team_names": [
+    "Team A",
+    "Team B"
+  ],
+  "simulation": {
+    "transmission_scores": [
+      {
+        "team_a": 100,
+        "team_b": 98
+      },
+      {
+        "team_a": 102,
+        "team_b": 98
+      },
+      {
+        "team_a": 102,
+        "team_b": 101
+      },
+      {
+        "team_a": 105,
+        "team_b": 101
+      },
+      {
+        "team_a": 105,
+        "team_b": 103
+      }
+    ],
+    "bet_scores": [
+      {
+        "team_a": 100,
+        "team_b": 98
+      },
+      {
+        "team_a": 100,
+        "team_b": 98
+      },
+      {
+        "team_a": 102,
+        "team_b": 98
+      },
+      {
+        "team_a": 102,
+        "team_b": 101
+      },
+      {
+        "team_a": 105,
+        "team_b": 101
+      }
+    ]
+  }
+}

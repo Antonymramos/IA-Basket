@@ -5,3 +5,8 @@ websockets
 python-dotenv
 fastapi
 uvicorn
+httpx
+pillow
+pytesseract
+opencv-python
+numpy

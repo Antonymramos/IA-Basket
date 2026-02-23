@@ -1,0 +1,14 @@
+2026/02/21-11:44:23.987 6504 Reusing MANIFEST C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_profile\Default\IndexedDB\https_www.bet365.bet.br_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/21-11:44:23.987 6504 Recovering log #9
+2026/02/21-11:44:23.987 6504 Reusing old log C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_profile\Default\IndexedDB\https_www.bet365.bet.br_0.indexeddb.leveldb/000009.log 
+2026/02/21-11:44:23.988 6504 Delete type=2 #8
+2026/02/21-11:44:23.991 2e0c Level-0 table #14: started
+2026/02/21-11:44:23.993 2e0c Level-0 table #14: 2059 bytes OK
+2026/02/21-11:44:23.994 2e0c Delete type=0 #9
+2026/02/21-11:44:23.995 5e68 Manual compaction at level-0 from '\x00\x06\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x07\x00\x00\x00' @ 0 : 0; will stop at '\x00\x06\x00\x00\x05' @ 240 : 1
+2026/02/21-11:44:23.995 5e68 Compacting 1@0 + 1@1 files
+2026/02/21-11:44:23.997 5e68 Generated table #15@0: 82 keys, 2079 bytes
+2026/02/21-11:44:23.997 5e68 Compacted 1@0 + 1@1 files => 2079 bytes
+2026/02/21-11:44:23.998 5e68 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/21-11:44:23.998 5e68 Delete type=2 #14
+2026/02/21-11:44:23.999 5e68 Manual compaction at level-0 from '\x00\x06\x00\x00\x05' @ 240 : 1 .. '\x00\x07\x00\x00\x00' @ 0 : 0; will stop at (end)

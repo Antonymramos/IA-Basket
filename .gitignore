@@ -1,0 +1,11 @@
+# Sensitive local configuration
+config.json
+.env
+.env.*
+
+# Keep template/example env files versioned
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]

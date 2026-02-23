@@ -1,0 +1,7 @@
+2026/02/21-19:12:45.659 2f54 Reusing MANIFEST C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_cdp_profile\Default\IndexedDB\https_www.bet365.bet.br_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/21-19:12:45.659 2f54 Recovering log #23
+2026/02/21-19:12:45.659 2f54 Reusing old log C:\Users\anton\OneDrive\Desktop\IA Basket\IA-Basket\data\bet365_cdp_profile\Default\IndexedDB\https_www.bet365.bet.br_0.indexeddb.leveldb/000023.log 
+2026/02/21-19:12:45.664 838 Level-0 table #29: started
+2026/02/21-19:12:45.666 838 Level-0 table #29: 614 bytes OK
+2026/02/21-19:12:45.667 838 Delete type=0 #23
+2026/02/21-19:12:45.668 2f54 Manual compaction at level-0 from '\x00\x0c\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0d\x00\x00\x00' @ 0 : 0; will stop at (end)
